@@ -30,19 +30,6 @@ services:
       - selenium
     command: ["mvn","-B","test"]
 
-  jenkins:
-    build:
-      context: ./jenkins
-    ports:
-      - "8080:8080"
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock  # let Jenkins run docker/compose
-      - .:/workspace                               # Jenkins sees repo for Jenkinsfile
-    depends_on:
-      - web
-      - selenium
-
 volumes:
   jenkins_home:
   maven_repo:
