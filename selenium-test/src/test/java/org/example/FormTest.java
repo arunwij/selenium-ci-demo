@@ -16,7 +16,7 @@ public class FormTest {
         String seleniumUrl = System.getenv().getOrDefault("SELENIUM_URL","http://localhost:4444/wd/hub");
         webUrl = System.getenv().getOrDefault("WEB_URL","http://localhost:3000");
         ChromeOptions opts = new ChromeOptions();
-        opts.addArguments("--no-sandbox","--disable-dev-shm-usage");
+        opts.addArguments("--headless=new", "--no-sandbox","--disable-dev-shm-usage");
         driver = new RemoteWebDriver(new URL(seleniumUrl), opts);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(2));
     }
