@@ -1,0 +1,27 @@
+pipeline {
+  agent any
+  options { timestamps(); disableConcurrentBuilds() }
+  triggers { pollSCM('H/5 * * * *') } // swap to GitHub webhook later
+  stages {
+    stage('Checkout'){ steps { checkout scm } }
+
+    stage('Build images'){
+      steps { sh 'docker compose build --pull' }
+    }
+
+    stage('Start app & Selenium'){
+      steps { sh 'docker compose up -d web selenium' }
+    }
+
+    stage('Run Selenium tests'){
+      steps {
+        sh 'docker compose run --rm tests'
+        junit 'selenium-test/target/surefire-reports/*.xml'
+        archiveArtifacts artifacts: 'selenium-test/target/surefire-reports/**', fingerprint: true
+      }
+    }
+  }
+  post {
+    always { sh 'docker compose down -v || true' }
+  }
+}

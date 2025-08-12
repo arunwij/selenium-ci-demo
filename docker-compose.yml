@@ -1,0 +1,48 @@
+name: selenium-ci-demo
+services:
+  web:
+    build:
+      context: ./web
+    ports:
+      - "3000:3000"
+
+  selenium:
+    image: seleniarm/standalone-chromium:latest
+    platform: linux/arm64
+    shm_size: 2g
+    ports:
+      - "4444:4444"
+      - "7900:7900"
+    environment:
+      - SE_VNC_NO_PASSWORD=1
+
+  tests:
+    image: maven:3.9-eclipse-temurin-17
+    working_dir: /workspace
+    environment:
+      - SELENIUM_URL=http://selenium:4444/wd/hub
+      - WEB_URL=http://web:3000
+    volumes:
+      - ./selenium-test:/workspace       # mount your IntelliJ project
+      - maven_repo:/root/.m2             # cache Maven deps
+    depends_on:
+      - web
+      - selenium
+    command: ["mvn","-B","test"]
+
+  jenkins:
+    build:
+      context: ./jenkins
+    ports:
+      - "8080:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock  # let Jenkins run docker/compose
+      - .:/workspace                               # Jenkins sees repo for Jenkinsfile
+    depends_on:
+      - web
+      - selenium
+
+volumes:
+  jenkins_home:
+  maven_repo:
